@@ -180,37 +180,80 @@ CasperTest.begin('Post url input is reset from all whitespace back to original v
         test.assertEquals(slugVal, originalSlug, 'slug gets reset to original value');
     });
 });
-// TODO this test is from editor_test and needs to come back in some form when tags are moved into PSM
-// CasperTest.begin('Tag editor', 7, function suite(test) {
-//    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
-//        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
-//        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
-//    });
-//
-//    var tagName = 'someTagName',
-//        createdTagSelector = '#entry-tags .tags .tag';
-//
-//    casper.then(function () {
-//        test.assertExists('#entry-tags', 'should have tag label area');
-//        test.assertExists('#entry-tags .tag-label', 'should have tag label icon');
-//        test.assertExists('#entry-tags input.tag-input', 'should have tag input area');
-//    });
-//
-//    casper.thenClick('#entry-tags input.tag-input');
-//    casper.then(function () {
-//        casper.sendKeys('#entry-tags input.tag-input', tagName, {keepFocus: true});
-//    });
-//    casper.then(function () {
-//        casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
-//    });
-//
-//    casper.waitForSelector(createdTagSelector, function onSuccess() {
-//        test.assertSelectorHasText(createdTagSelector, tagName, 'typing enter after tag name should create tag');
-//    });
-//
-//    casper.thenClick(createdTagSelector);
-//
-//    casper.waitWhileSelector(createdTagSelector, function onSuccess() {
-//        test.assert(true, 'clicking the tag should delete the tag');
-//    });
-// });
+
+CasperTest.begin('Tag Editor', 9, function suite(test) {
+    var testTag = 'Test1',
+        createdTag = '#tag-input + .selectize-control .item',
+        tagInput = '#tag-input + .selectize-control input[type="text"]';
+
+    casper.thenOpenAndWaitForPageLoad('editor', function testTitleAndUrl() {
+        test.assertTitle('Editor - Test Blog', 'Ghost admin has incorrect title');
+        test.assertUrlMatch(/ghost\/editor\/$/, 'Landed on the correct URL');
+    });
+
+    casper.then(function () {
+        test.assertExists('#tag-input + .selectize-control', 'should have tag list area');
+    });
+
+    casper.thenClick(tagInput);
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Enter, {keepFocus: true});
+    });
+
+    casper.waitForSelector(createdTag, function onSuccess() {
+        test.assertSelectorHasText(createdTag, testTag, 'typing enter after tag name should create tag');
+    });
+
+    casper.thenClick(createdTag + ' a.remove');
+    casper.waitWhileSelector(createdTag, function onSuccess() {
+        test.assert(true, 'clicking the tag remove button should delete the tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Tab, {keepFocus: true});
+    });
+    casper.waitForSelector(createdTag, function onSuccess() {
+        test.assertSelectorHasText(createdTag, testTag, 'typing tab after tag name should create tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Backspace, {keepFocus: true});
+    });
+    casper.waitWhileSelector(createdTag, function onSuccess() {
+        test.assert(true, 'hitting backspace should delete the last tag');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    });
+    casper.then(function () {
+        casper.sendKeys(tagInput, casper.page.event.key.Enter, {keepFocus: true});
+    });
+    casper.thenClick(createdTag);
+    casper.waitForSelector(createdTag + '.active', function onSuccess() {
+        test.assert(true, 'clicking a tag should highlight it');
+    });
+
+    casper.then(function () {
+        casper.sendKeys(createdTag + '.active', casper.page.event.key.Backspace);
+    });
+    casper.waitWhileSelector(createdTag + '.active', function onSuccess() {
+        test.assert(true, 'hitting backspace on a higlighted tag should delete it');
+    });
+
+    // TODO: add this back in if create-on-blur functionality is required
+    // casper.then(function () {
+    //     casper.sendKeys(tagInput, testTag, {keepFocus: true});
+    // });
+    // // Click in a different field
+    // casper.thenClick('#post-setting-date');
+    // casper.waitForSelector(createdTag, function onSuccess() {
+    //     test.assertSelectorHasText(createdTag, testTag, 'de-focusing from tag input should create tag with leftover text');
+    // });
+});

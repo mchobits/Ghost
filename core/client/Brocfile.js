@@ -1,7 +1,9 @@
 /* global require, module */
 
 var EmberApp = require('ember-cli/lib/broccoli/ember-app'),
-    isProduction = EmberApp.env() === 'production',
+    environment = EmberApp.env(),
+    isProduction = environment === 'production',
+    mythCompress = isProduction || environment === 'test',
     disabled = {enabled: false},
     assetLocation,
     app;
@@ -27,10 +29,16 @@ app = new EmberApp({
         source: './app/styles/app.css',
         inputFile: 'app.css',
         browsers: 'last 2 versions',
-        outputFile: 'ghost.css'
+        // @TODO: enable sourcemaps for development without including them in the release
+        sourcemap: false,
+        compress: mythCompress,
+        outputFile: isProduction ? 'ghost.min.css' : 'ghost.css'
     },
     hinting: false,
-    fingerprint: disabled
+    fingerprint: disabled,
+    'ember-cli-selectize': {
+        theme: false
+    }
 });
 
 // 'dem Scripts
@@ -44,7 +52,7 @@ app.import('bower_components/showdown-ghost/src/extensions/highlight.js');
 app.import('bower_components/moment/moment.js');
 app.import('bower_components/keymaster/keymaster.js');
 app.import('bower_components/devicejs/lib/device.js');
-app.import('bower_components/jquery-ui/ui/jquery-ui.js');
+app.import('bower_components/jquery-ui/jquery-ui.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload.js');
 app.import('bower_components/blueimp-load-image/js/load-image.all.min.js');
 app.import('bower_components/jquery-file-upload/js/jquery.fileupload-process.js');

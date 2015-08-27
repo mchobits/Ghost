@@ -3,6 +3,7 @@ import ValidationEngine from 'ghost/mixins/validation-engine';
 
 export default Ember.Controller.extend(ValidationEngine, {
     validationType: 'signin',
+    submitting: false,
 
     application: Ember.inject.controller(),
     notifications: Ember.inject.service(),
@@ -28,6 +29,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 // it needs to be caught so it doesn't generate an exception in the console,
                 // but it's actually "handled" by the sessionAuthenticationFailed action handler.
             }).finally(function () {
+                self.toggleProperty('submitting');
                 appController.set('skipAuthSuccessHandler', undefined);
             });
         },
@@ -35,12 +37,13 @@ export default Ember.Controller.extend(ValidationEngine, {
         validateAndAuthenticate: function () {
             var self = this;
 
+            this.toggleProperty('submitting');
+
             // Manually trigger events for input fields, ensuring legacy compatibility with
             // browsers and password managers that don't send proper events on autofill
             $('#login').find('input').trigger('change');
 
             this.validate({format: false}).then(function () {
-                self.get('notifications').closeNotifications();
                 self.send('authenticate');
             }).catch(function (errors) {
                 self.get('notifications').showErrors(errors);

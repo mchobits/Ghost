@@ -4,6 +4,7 @@ import {request as ajax} from 'ic-ajax';
 export default Ember.Controller.extend({
     uploadButtonText: 'Import',
     importErrors: '',
+    submitting: false,
 
     ghostPaths: Ember.inject.service('ghost-paths'),
     notifications: Ember.inject.service(),
@@ -36,7 +37,6 @@ export default Ember.Controller.extend({
 
             this.set('uploadButtonText', 'Importing');
             this.set('importErrors', '');
-            notifications.closeNotifications();
 
             formData.append('importfile', file);
 
@@ -78,18 +78,23 @@ export default Ember.Controller.extend({
         },
 
         sendTestEmail: function () {
-            var notifications = this.get('notifications');
+            var notifications = this.get('notifications'),
+                self = this;
+
+            this.toggleProperty('submitting');
 
             ajax(this.get('ghostPaths.url').api('mail', 'test'), {
                 type: 'POST'
             }).then(function () {
                 notifications.showAlert('Check your email for the test message.', {type: 'info'});
+                self.toggleProperty('submitting');
             }).catch(function (error) {
                 if (typeof error.jqXHR !== 'undefined') {
                     notifications.showAPIError(error);
                 } else {
                     notifications.showErrors(error);
                 }
+                self.toggleProperty('submitting');
             });
         }
     }

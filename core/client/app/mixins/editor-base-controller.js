@@ -17,6 +17,7 @@ export default Ember.Mixin.create({
     autoSaveId: null,
     timedSaveId: null,
     editor: null,
+    submitting: false,
 
     notifications: Ember.inject.service(),
 
@@ -242,10 +243,18 @@ export default Ember.Mixin.create({
                 timedSaveId = this.get('timedSaveId'),
                 self = this,
                 psmController = this.get('postSettingsMenuController'),
-                promise,
-                notifications = this.get('notifications');
+                promise;
 
             options = options || {};
+
+            // when navigating quickly between pages autoSave will occasionally
+            // try to run after the editor has been torn down so bail out here
+            // before we throw errors
+            if (!this.get('editor').$()) {
+                return 0;
+            }
+
+            this.toggleProperty('submitting');
 
             if (options.backgroundSave) {
                 // do not allow a post's status to be set to published by a background save
@@ -263,8 +272,6 @@ export default Ember.Mixin.create({
                 Ember.run.cancel(timedSaveId);
                 this.set('timedSaveId', null);
             }
-
-            notifications.closeNotifications();
 
             // Set the properties that are indirected
             // set markdown equal to what's in the editor, minus the image markers.
@@ -294,6 +301,7 @@ export default Ember.Mixin.create({
                         self.showSaveNotification(prevStatus, model.get('status'), isNew ? true : false);
                     }
 
+                    self.toggleProperty('submitting');
                     return model;
                 });
             }).catch(function (errors) {
@@ -303,6 +311,7 @@ export default Ember.Mixin.create({
 
                 self.set('model.status', prevStatus);
 
+                self.toggleProperty('submitting');
                 return self.get('model');
             });
 

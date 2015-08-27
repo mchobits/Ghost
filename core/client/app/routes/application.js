@@ -40,12 +40,15 @@ export default Ember.Route.extend(ApplicationRouteMixin, ShortcutsRoute, {
 
         closeMenus: function () {
             this.get('dropdown').closeDropdowns();
-            this.get('notifications').closeAll();
             this.send('closeModal');
             this.controller.setProperties({
                 showSettingsMenu: false,
                 showMobileMenu: false
             });
+        },
+
+        didTransition: function () {
+            this.send('closeMenus');
         },
 
         signedIn: function () {

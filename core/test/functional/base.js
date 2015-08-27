@@ -89,6 +89,10 @@ screens = {
         url: 'ghost/settings/general',
         selector: '.gh-nav-settings-general.active'
     },
+    'settings.tags': {
+        url: 'ghost/settings/tags',
+        selector: '.gh-nav-settings-tags.active'
+    },
     team: {
         url: 'ghost/team',
         linkSelector: '.gh-nav-main-users',
@@ -469,9 +473,6 @@ CasperTest.Routines = (function () {
         casper.thenOpenAndWaitForPageLoad('editor', function createTestPost() {
             casper.sendKeys('#entry-title', testPost.title);
             casper.writeContentToEditor(testPost.html);
-            // TODO move these into psm tests when tags have been added there
-            // casper.sendKeys('#entry-tags input.tag-input', 'TestTag');
-            // casper.sendKeys('#entry-tags input.tag-input', casper.page.event.key.Enter);
         });
 
         casper.waitForSelectorTextChange('.entry-preview .rendered-markdown');
