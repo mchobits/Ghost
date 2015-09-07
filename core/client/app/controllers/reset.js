@@ -34,6 +34,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             var credentials = this.getProperties('newPassword', 'ne2Password', 'token'),
                 self = this;
             this.set('flowErrors', '');
+            this.get('hasValidated').addObjects((['newPassword', 'ne2Password']));
             this.validate().then(function () {
                 self.toggleProperty('submitting');
                 ajax({
@@ -45,7 +46,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                 }).then(function (resp) {
                     self.toggleProperty('submitting');
                     self.get('notifications').showAlert(resp.passwordreset[0].message, {type: 'warn', delayed: true});
-                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: credentials.newPassword
                     });

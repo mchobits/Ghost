@@ -49,9 +49,20 @@ export default Ember.Controller.extend(ValidationEngine, {
     },
 
     actions: {
+        preValidate: function (model) {
+            // Only triggers validation if a value has been entered, preventing empty errors on focusOut
+            if (this.get(model)) {
+                if (model === 'email') {
+                    this.send('handleEmail');
+                }
+                this.validate({property: model});
+            }
+        },
+
         setup: function () {
             var self = this,
-                data = self.getProperties('blogTitle', 'name', 'email', 'password', 'image'),
+                setupProperties = ['blogTitle', 'name', 'email', 'password', 'image'],
+                data = self.getProperties(setupProperties),
                 notifications = this.get('notifications'),
                 config = this.get('config'),
                 method = this.get('blogCreated') ? 'PUT' : 'POST';
@@ -59,6 +70,7 @@ export default Ember.Controller.extend(ValidationEngine, {
             this.toggleProperty('submitting');
             this.set('flowErrors', '');
 
+            this.get('hasValidated').addObjects(setupProperties);
             this.validate().then(function () {
                 ajax({
                     url: self.get('ghostPaths.url').api('authentication', 'setup'),
@@ -75,7 +87,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                     config.set('blogTitle', data.blogTitle);
                     // Don't call the success handler, otherwise we will be redirected to admin
                     self.get('application').set('skipAuthSuccessHandler', true);
-                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('email'),
                         password: self.get('password')
                     }).then(function () {

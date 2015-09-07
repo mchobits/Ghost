@@ -52,6 +52,20 @@ describe('Tags API', function () {
                 done();
             }).catch(done);
         });
+
+        it('rejects invalid names with ValidationError', function (done) {
+            var invalidTag = _.clone(newTag);
+
+            invalidTag.name = ', starts with a comma';
+
+            TagAPI.add({tags: [invalidTag]}, testUtils.context.admin)
+                .then(function () {
+                    done(new Error('Adding a tag with an invalid name is not rejected.'));
+                }).catch(function (errors) {
+                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Edit', function () {
@@ -86,6 +100,18 @@ describe('Tags API', function () {
                 done();
             }).catch(done);
         });
+
+        it('rejects invalid names with ValidationError', function (done) {
+            var invalidTagName = ', starts with a comma';
+
+            TagAPI.edit({tags: [{name: invalidTagName}]}, _.extend({}, context.editor, {id: firstTag}))
+                .then(function () {
+                    done(new Error('Adding a tag with an invalid name is not rejected.'));
+                }).catch(function (errors) {
+                    errors.should.have.enumerable(0).with.property('errorType', 'ValidationError');
+                    done();
+                }).catch(done);
+        });
     });
 
     describe('Destroy', function () {
@@ -102,7 +128,11 @@ describe('Tags API', function () {
     });
 
     describe('Browse', function () {
-        beforeEach(testUtils.setup('tags'));
+        beforeEach(function (done) {
+            testUtils.fixtures.insertMoreTags().then(function () {
+                done();
+            });
+        });
 
         it('can browse (internal)', function (done) {
             TagAPI.browse(testUtils.context.internal).then(function (results) {

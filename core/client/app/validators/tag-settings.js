@@ -8,6 +8,12 @@ var TagSettingsValidator = BaseValidator.create({
         if (validator.empty(name)) {
             model.get('errors').add('name', 'You must specify a name for the tag.');
             this.invalidate();
+        } else if (name.match(/^,/)) {
+            model.get('errors').add('name', 'Tag names can\'t start with commas.');
+            this.invalidate();
+        } else if (!validator.isLength(name, 0, 150)) {
+            model.get('errors').add('name', 'Tag names cannot be longer than 150 characters.');
+            this.invalidate();
         }
     },
     metaTitle: function (model) {

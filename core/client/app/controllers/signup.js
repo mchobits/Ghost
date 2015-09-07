@@ -42,13 +42,15 @@ export default Ember.Controller.extend(ValidationEngine, {
         signup: function () {
             var self = this,
                 model = this.get('model'),
-                data = model.getProperties('name', 'email', 'password', 'token'),
+                setupProperties = ['name', 'email', 'password', 'token'],
+                data = model.getProperties(setupProperties),
                 image = this.get('image'),
 
                 notifications = this.get('notifications');
 
             this.set('flowErrors', '');
 
+            this.get('hasValidated').addObjects(setupProperties);
             this.validate().then(function () {
                 self.toggleProperty('submitting');
                 ajax({
@@ -64,7 +66,7 @@ export default Ember.Controller.extend(ValidationEngine, {
                         }]
                     }
                 }).then(function () {
-                    self.get('session').authenticate('simple-auth-authenticator:oauth2-password-grant', {
+                    self.get('session').authenticate('ghost-authenticator:oauth2-password-grant', {
                         identification: self.get('model.email'),
                         password: self.get('model.password')
                     }).then(function () {
